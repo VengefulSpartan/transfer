@@ -1,0 +1,53 @@
+const id="User__427054";
+const message_container = document.getElementById("chat-messages")
+const userInp=document.getElementById("user-input")
+const sendButton=document.getElementById("send-button")
+const typingIndicator=document.getElementById("typing-indicator")
+ 
+async function sendMessage() {
+    console.log("executing Sendmessage")
+    const message=userInp.value.trim();
+    if(!message)return;
+    userInp.value='';
+    userInp.disabled=true;
+    sendButton.disabled=true;
+
+    typingIndicator.style.display='block'
+    message_container.scrollTop=message_container.scrollHeight;
+    
+    try{
+        const response=await fetch('/chat',{
+            method:'POST',
+            headers:{
+                'Content-Type':'application/json'
+            },
+            body:JSON.stringify({message,id})
+        })
+        const data=await response.json()
+        typingIndicator.style.display='none'
+    }catch(error){
+        console.error('Error:',error);
+        addMessage("there was a error in response, please try again later",'bot')
+        typingIndicator.style.display='none'
+    }
+    userInp.disabled=false;
+    sendButton.disabled=false;
+    userInp.focus()
+    console.log("executed addmessage");
+}
+function addMessage(text,sender){
+    console.log("executing addmessage");
+    const messageDiv=document.createElement('div');
+    messageDiv.className=`message ${sender}-message`;
+    messageDiv.textContent=text;
+    message_container.insertBefore(messageDiv,typingIndicator);
+    message_container.scrollTop=message_container.scrollHeight;
+    console.log("executed addmessage");
+}
+sendButton.addEventListener('click',sendMessage);
+userInp.addEventListener('keypress',(e)=>{
+    if(e.key==='Enter'){
+        sendMessage()
+    }
+})
+userInp.focus()
